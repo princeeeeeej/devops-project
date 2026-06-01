@@ -12,7 +12,7 @@ jobs:
     steps:
       - run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" &> ~/ssh_key
-          echo "yes" | ssh -i ~/ssh_key ubuntu@13.206.197.40
+          ssh -i ~/ssh_key ubuntu@13.206.197.40 | echo "yes" 
           cd devops-project && git pull
           pnpm install
           pnpm run build
