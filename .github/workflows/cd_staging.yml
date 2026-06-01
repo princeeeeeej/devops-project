@@ -10,12 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" &> ~/ssh_key
-          ssh -i ~/ssh_key ubuntu@13.206.197.40 | echo "yes" 
-          cd devops-project && git pull
-          pnpm install
-          pnpm run build
-          pm2 restart fe-server
-          pm2 restart http-server
-          pm2 restart ws-server
+      - name: Deploy to EC2
+        run: |
+          # 1. Setup the SSH key file and set correct permissions
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/ssh_key
+          chmod 600 ~/ssh_key
+          
+          # 2. Execute the commands INSIDE the remote AWS server
+          ssh -i ~/ssh_key -o StrictHostKeyChecking=no ubuntu@13.206.197.40 << 'EOF'
+            cd devops-project
+            git pull origin main
+            pnpm install
+            pnpm run build
+            pm2 restart fe-server
+            pm2 restart http-server
+            pm2 restart ws-server
+          EOF
